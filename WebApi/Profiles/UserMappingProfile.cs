@@ -9,6 +9,7 @@ namespace WebApi.Profiles
 		public UserMappingProfile()
 		{
 			CreateMap<SignUpRequest, User>();
+			CreateMap<CreateProjectRequest, Project>();
 		}
 	}
 }
