@@ -19,18 +19,35 @@ namespace WebApi.Controllers
             _db = context;
             _mapper = mapper;
         }
+
         [HttpGet]
         public async Task<IActionResult> Get(long id)
         {
-            var comment = await _db.Comments.FindAsync(id);
+            var comment = await _db.Comments.FirstOrDefaultAsync(x => x.Id == id);
 
-            return Ok(comment);
+            var response = _mapper.Map<CommentResponse>(comment);
+
+            var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == comment.SenderId);
+
+            response.Sender = _mapper.Map<UserResponse>(sender);
+
+            return Ok(response);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll(long taskId)
         {
-            var comments = await _db.Comments.Where(x => x.TaskId == taskId).ToListAsync();
+            var comments = await _db.Comments
+                .Where(x => x.TaskId == taskId)
+                .Select(x => _mapper.Map<CommentResponse>(x))
+                .ToListAsync();
+
+            foreach (var comment in comments)
+            {
+                var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == comment.SenderId);
+
+                comment.Sender = _mapper.Map<UserResponse>(sender);
+            }
 
             return Ok(comments);
         }
@@ -38,13 +55,19 @@ namespace WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(CreateCommentRequest req)
         {
-            var newTask = _mapper.Map<Comment>(req);
+            var newComment = _mapper.Map<Comment>(req);
 
-            await _db.AddAsync(newTask);
+            await _db.AddAsync(newComment);
 
             await _db.SaveChangesAsync();
 
-            return Ok(newTask);
+            var response = _mapper.Map<CommentResponse>(newComment);
+            
+            var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == newComment.SenderId);
+
+            response.Sender = _mapper.Map<UserResponse>(sender);
+
+            return Ok(response);
         }
 
         [HttpDelete]

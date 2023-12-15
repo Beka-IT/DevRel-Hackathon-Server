@@ -28,15 +28,24 @@ namespace WebApi.Controllers
 		{
 			var user = await _db.Users.FindAsync(id);
 
-			return Ok(user);
+			var result = _mapper.Map<UserResponse>(user);
+
+            result.Projects = _db.Projects.Include(x => x.Employees)
+				.Where(p => p.Employees.Contains(user))
+				.Select(x => _mapper.Map<ProjectResponseForUsers>(x)).ToList();
+
+			return Ok(result);
 		}
 
         [HttpGet]
         public async Task<IActionResult> GetAll(long companyId)
         {
-			var users = await _db.Users.Where(x => x.CompanyId == companyId).ToListAsync();
+			var users = await _db.Users
+				.Where(x => x.CompanyId == companyId)
+				.Select(x => _mapper.Map<UserResponse>(x))
+				.ToListAsync();
 
-			return Ok(users);
+            return Ok(users);
         }
 
         [HttpPost]
@@ -48,7 +57,13 @@ namespace WebApi.Controllers
 
             if (!BCrypt.Net.BCrypt.Verify(req.Password, user.Password)) return BadRequest("Неправильный логин или пароль!");
 
-            return Ok(user);
+            var result = _mapper.Map<UserResponse>(user);
+
+            result.Projects = _db.Projects.Include(x => x.Employees)
+                .Where(p => p.Employees.Contains(user))
+                .Select(x => _mapper.Map<ProjectResponseForUsers>(x)).ToList();
+
+            return Ok(result);
         }
 
 		[HttpPost]
@@ -68,7 +83,9 @@ namespace WebApi.Controllers
 
 			await _db.SaveChangesAsync();
 
-			return Ok(newUser);
+            var result = _mapper.Map<UserResponse>(newUser);
+
+            return Ok(result);
 		}
 
 		[HttpPut]
@@ -89,7 +106,9 @@ namespace WebApi.Controllers
 
 			await _db.SaveChangesAsync();
 
-			return Ok(user);
+            var result = _mapper.Map<UserResponse>(user);
+
+            return Ok(result);
         }
 
 		[HttpPut]
@@ -105,7 +124,9 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-			return Ok();
+            var result = _mapper.Map<UserResponse>(user);
+
+            return Ok(result);
 		}
 
 		[HttpPut]
@@ -120,7 +141,9 @@ namespace WebApi.Controllers
 
 			await _db.SaveChangesAsync();
 
-			return Ok();
+            var result = _mapper.Map<UserResponse>(user);
+
+            return Ok(result);
 		}
 
 

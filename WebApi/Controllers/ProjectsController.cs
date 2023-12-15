@@ -24,15 +24,37 @@ namespace WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(long id)
         {
-            var project = await _db.Projects.FindAsync(id);
+            var project = await _db.Projects.Include(x => x.Employees)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-            return Ok(project);
+            var result = _mapper.Map<ProjectResponse>(project);
+
+            result.Members = project.Employees
+                .Select(x => _mapper.Map<UserResponseForProject>(x)).ToList();
+
+            return Ok(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll(long companyId)
         {
-            var projects = await _db.Projects.Where(x => x.CompanyId == companyId).ToListAsync();
+            var projects = await _db.Projects
+                .Where(x => x.CompanyId == companyId)
+                .Select(x => _mapper.Map<ProjectResponse>(x))
+                .ToListAsync();
+
+            return Ok(projects);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetByUserId(long userId)
+        {
+            var user = _db.Users.Find(userId);
+
+            var projects = await _db.Projects
+                .Where(x => x.Employees.Contains(user))
+                .Select(x => _mapper.Map<ProjectResponse>(x))
+                .ToListAsync();
 
             return Ok(projects);
         }
@@ -54,13 +76,19 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok();
+            var result = _mapper.Map<ProjectResponse>(newProject);
+
+            result.Members = newProject.Employees
+                .Select(x => _mapper.Map<UserResponseForProject>(x)).ToList();
+
+            return Ok(result);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update(UpdateProjectRequest req)
         {
-            var project = await _db.Projects.FindAsync(req.Id);
+            var project = await _db.Projects.Include(x => x.Employees)
+                .FirstOrDefaultAsync(x => x.Id == req.Id);
 
             if (project is null) return BadRequest();
 
@@ -72,7 +100,12 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok();
+            var result = _mapper.Map<ProjectResponse>(project);
+
+            result.Members = project.Employees
+                .Select(x => _mapper.Map<UserResponseForProject>(x)).ToList();
+
+            return Ok(result);
         }
 
         [HttpDelete]
@@ -103,10 +136,15 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok();
+            var result = _mapper.Map<ProjectResponse>(project);
+
+            result.Members = project.Employees
+                .Select(x => _mapper.Map<UserResponseForProject>(x)).ToList();
+
+            return Ok(result);
         }
 
-        [HttpDelete]
+        [HttpPut]
         public async Task<IActionResult> DeleteMember(long employeeId, long projectId)
         {
             var employee = await _db.Users.FindAsync(employeeId);
@@ -120,7 +158,12 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok();
+            var result = _mapper.Map<ProjectResponse>(project);
+
+            result.Members = project.Employees
+                .Select(x => _mapper.Map<UserResponseForProject>(x)).ToList();
+
+            return Ok(result);
         }
     }
 }

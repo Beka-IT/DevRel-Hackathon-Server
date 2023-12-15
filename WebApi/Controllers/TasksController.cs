@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using WebApi.Data;
 using WebApi.Entities;
 using WebApi.Enums;
@@ -27,7 +29,21 @@ namespace WebApi.Controllers
         {
             var task = await _db.Tasks.FindAsync(id);
 
-            return Ok(task);
+            var response = _mapper.Map<TaskResponse>(task);
+
+            response.Comments = await _db.Comments
+                .Where(x => x.TaskId == id)
+                .Select(x => _mapper.Map<CommentResponse>(x))
+                .ToListAsync();
+
+            foreach (var comment in response.Comments)
+            {
+                var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == comment.SenderId);
+
+                comment.Sender = _mapper.Map<UserResponse>(sender);
+            }
+
+            return Ok(response);
         }
 
         [HttpGet]
@@ -35,7 +51,11 @@ namespace WebApi.Controllers
         {
             var tasks = await _db.Tasks.Where(x => x.ProjectId == projectId).ToListAsync();
 
-            return Ok(tasks);
+            var responses = tasks.Where(x => x.ProjectId == projectId)
+                .Select(x => _mapper.Map<TaskResponse>(x))
+                .ToList();
+
+            return Ok(responses);
         }
 
         [HttpPost]
@@ -47,7 +67,9 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(newTask);
+            var response = _mapper.Map<TaskResponse>(newTask);
+
+            return Ok(response);
         }
 
         [HttpPut]
@@ -63,7 +85,9 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(task);
+            var response = _mapper.Map<TaskResponse>(task);
+
+            return Ok(response);
         }
 
         [HttpPut]
@@ -85,7 +109,9 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(task);
+            var response = _mapper.Map<TaskResponse>(task);
+
+            return Ok(response);
         }
 
         [HttpDelete]
