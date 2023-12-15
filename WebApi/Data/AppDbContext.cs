@@ -12,6 +12,7 @@ namespace WebApi.Data
 		public DbSet<Project> Projects { get; set; }
 		public DbSet<Company> Companies { get; set; }
 		public DbSet<Entities.Task> Tasks { get; set; }
+		public DbSet<Reference> References { get; set; }
 
 		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
 		{

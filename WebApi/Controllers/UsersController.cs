@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Data;
 using WebApi.Entities;
+using WebApi.Enums;
 using WebApi.Models;
 
 namespace WebApi.Controllers
@@ -22,22 +23,119 @@ namespace WebApi.Controllers
 			_mapper = mapper;
 		}
 
+		[HttpGet]
+		public async Task<IActionResult> Get(long id)
+		{
+			var user = await _db.Users.FindAsync(id);
+
+			return Ok(user);
+		}
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll(long companyId)
+        {
+			var users = await _db.Users.Where(x => x.CompanyId == companyId).ToListAsync();
+
+			return Ok(users);
+        }
+
+        [HttpPost]
+		public async Task<IActionResult> SignIn(SignInRequest req)
+		{
+			var user = await _db.Users.FirstOrDefaultAsync(x => x.Login == req.Login);
+
+			if (user is null) return BadRequest("Неправильный логин или пароль!");
+
+            if (!BCrypt.Net.BCrypt.Verify(req.Password, user.Password)) return BadRequest("Неправильный логин или пароль!");
+
+            return Ok(user);
+        }
+
 		[HttpPost]
 		public async Task<IActionResult> SignUp(SignUpRequest req)
 		{
-			if (req is null) return BadRequest();
-
 			var isLoginBusy = await _db.Users.AnyAsync(x => x.Login == req.Login);
 
 			if (isLoginBusy) return BadRequest("Этот логин занят!");
 
 			var newUser = _mapper.Map<User>(req);
+
 			newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
+
 			newUser.Role = Enums.RoleType.Employee;
+
 			await _db.AddAsync(newUser);
+
+			await _db.SaveChangesAsync();
+
+			return Ok(newUser);
+		}
+
+		[HttpPut]
+		public async Task<IActionResult> ToggleActivation(long userId, long executorId)
+		{
+			var user = await _db.Users.FindAsync(userId);
+
+            var executor = await _db.Users.FindAsync(executorId);
+
+			if(user is null || executor is null) return BadRequest();
+
+			if(executor.Role is not Enums.RoleType.Admin) 
+			{
+				return BadRequest("Permission denied!");
+			}
+
+			user.IsActivated = !user.IsActivated;
+
+			await _db.SaveChangesAsync();
+
+			return Ok(user);
+        }
+
+		[HttpPut]
+        public async Task<IActionResult> Update(UpdateUserRequest req)
+		{
+			var user = await _db.Users.FindAsync(req.Id);
+
+			if(user is null) return BadRequest();
+
+			user.Email = req.Email;
+            user.Phone = req.Phone;
+            user.Position = req.Position;
+
+            await _db.SaveChangesAsync();
+
+			return Ok();
+		}
+
+		[HttpPut]
+
+		public async Task<IActionResult> ChangeRole(long userId, RoleType role)
+		{
+			var user = await _db.Users.FindAsync(userId);
+
+			if(user is null) return BadRequest();
+
+			user.Role = role;
+
 			await _db.SaveChangesAsync();
 
 			return Ok();
 		}
+
+
+        [HttpDelete]
+		public async Task<IActionResult> Delete(long id)
+		{
+            var user = await _db.Users.FindAsync(id);
+
+			if (user is null) return BadRequest();
+
+			_db.Remove(user);
+
+			await _db.SaveChangesAsync();
+
+			return Ok(user);
+        }
 	}
 }

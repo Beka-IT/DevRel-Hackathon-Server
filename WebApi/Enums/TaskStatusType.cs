@@ -2,6 +2,6 @@
 {
 	public enum TaskStatusType
 	{
-		UnderConsideration, InProgress, Testing, Completed, CompletedLate
+		NeedToDo = 10, UnderConsideration = 11, InProgress = 12, Testing = 13, Completed = 14, CompletedLate = 15
 	}
 }

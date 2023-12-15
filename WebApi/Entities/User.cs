@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Metadata;
+using System.Text.Json.Serialization;
 using WebApi.Enums;
 
 namespace WebApi.Entities
@@ -12,6 +13,7 @@ namespace WebApi.Entities
 		public string Phone { get; set; }
 		public string Email { get; set; }
 		public string Login { get; set; }
+		[JsonIgnore]
 		public string Password { get; set; }
 		public DateTime DateOfBirth { get; set; }
 		public bool IsActivated { get; set; }

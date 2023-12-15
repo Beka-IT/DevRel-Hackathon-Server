@@ -2,6 +2,6 @@
 {
 	public enum RoleType
 	{
-		Employee, Lead, Admin
+		Employee = 4 , Lead = 5, Admin = 6
 	}
 }
