@@ -86,7 +86,7 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(project);
+            return Ok();
         }
 
         [HttpPost]

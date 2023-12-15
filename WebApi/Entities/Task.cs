@@ -13,5 +13,6 @@ namespace WebApi.Entities
 		public DateTime DeadLine { get; set; }
 		public long ProjectId { get; set; }
 		public Project Project { get; set; }
-	}
+        public ICollection<Comment> Comments { get; }
+    }
 }

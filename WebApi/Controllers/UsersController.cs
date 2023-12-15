@@ -135,7 +135,7 @@ namespace WebApi.Controllers
 
 			await _db.SaveChangesAsync();
 
-			return Ok(user);
+			return Ok();
         }
 	}
 }

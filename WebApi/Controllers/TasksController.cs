@@ -99,7 +99,7 @@ namespace WebApi.Controllers
 
             await _db.SaveChangesAsync();
 
-            return Ok(task);
+            return Ok();
         }
     }
 }

@@ -9,8 +9,9 @@ namespace WebApi.Profiles
 		public UserMappingProfile()
 		{
 			CreateMap<SignUpRequest, User>();
-			CreateMap<CreateProjectRequest, Project>();
+            CreateMap<CreateCommentRequest, Comment>();
+            CreateMap<CreateProjectRequest, Project>();
 			CreateMap<CreateTaskRequest, Entities.Task>();
-		}
+        }
 	}
 }
