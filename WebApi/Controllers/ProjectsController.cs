@@ -42,11 +42,19 @@ namespace WebApi.Controllers
         {
             var newProject = _mapper.Map<Project>(req);
 
+            var companyOwnerId = _db.Companies.Find(req.CompanyId).OwnerId;
+
+            var companyOwner = await _db.Users.FindAsync(companyOwnerId);
+
+            var maintainer = await _db.Users.FindAsync(req.MaintainerId);
+
+            newProject.Employees = new List<User> { maintainer, companyOwner };
+
             await _db.AddAsync(newProject);
 
             await _db.SaveChangesAsync();
 
-            return Ok(newProject);
+            return Ok();
         }
 
         [HttpPut]
@@ -79,6 +87,40 @@ namespace WebApi.Controllers
             await _db.SaveChangesAsync();
 
             return Ok(project);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddMember(long employeeId, long projectId)
+        {
+            var employee = await _db.Users.FindAsync(employeeId);
+            var project = await _db.Projects
+                .Include(x => x.Employees)
+                .FirstOrDefaultAsync(x => x.Id == projectId);
+
+            if(employee is null || project is null) return BadRequest();
+
+            project.Employees.Add(employee);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMember(long employeeId, long projectId)
+        {
+            var employee = await _db.Users.FindAsync(employeeId);
+            var project = await _db.Projects
+                .Include(x => x.Employees)
+                .FirstOrDefaultAsync(x => x.Id == projectId);
+
+            if (employee is null || project is null) return BadRequest();
+
+            project.Employees.Remove(employee);
+
+            await _db.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }
