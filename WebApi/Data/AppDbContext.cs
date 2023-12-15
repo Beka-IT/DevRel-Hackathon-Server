@@ -39,10 +39,6 @@ namespace WebApi.Data
 				.IsRequired();
 
 			modelBuilder.Entity<User>()
-				.HasMany(e => e.Tasks)
-				.WithMany(e => e.Users);
-
-			modelBuilder.Entity<User>()
 				.HasMany(e => e.Projects)
 				.WithMany(e => e.Employees);
 		}

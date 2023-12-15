@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApi.Data;
 
@@ -10,9 +11,10 @@ using WebApi.Data;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231215200012_AlterUsers")]
+    partial class AlterUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.0");
@@ -30,6 +32,21 @@ namespace WebApi.Migrations
                     b.HasIndex("ProjectsId");
 
                     b.ToTable("ProjectUser");
+                });
+
+            modelBuilder.Entity("TaskUser", b =>
+                {
+                    b.Property<long>("TasksId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("UsersId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("TasksId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("TaskUser");
                 });
 
             modelBuilder.Entity("WebApi.Entities.Company", b =>
@@ -139,7 +156,7 @@ namespace WebApi.Migrations
                     b.Property<int>("Difficulty")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long?>("ExecutorId")
+                    b.Property<long>("ExecutorId")
                         .HasColumnType("INTEGER");
 
                     b.Property<long>("ProjectId")
@@ -232,6 +249,21 @@ namespace WebApi.Migrations
                     b.HasOne("WebApi.Entities.Project", null)
                         .WithMany()
                         .HasForeignKey("ProjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TaskUser", b =>
+                {
+                    b.HasOne("WebApi.Entities.Task", null)
+                        .WithMany()
+                        .HasForeignKey("TasksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WebApi.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

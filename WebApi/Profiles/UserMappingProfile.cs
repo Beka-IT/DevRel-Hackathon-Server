@@ -10,6 +10,7 @@ namespace WebApi.Profiles
 		{
 			CreateMap<SignUpRequest, User>();
 			CreateMap<CreateProjectRequest, Project>();
+			CreateMap<CreateTaskRequest, Entities.Task>();
 		}
 	}
 }

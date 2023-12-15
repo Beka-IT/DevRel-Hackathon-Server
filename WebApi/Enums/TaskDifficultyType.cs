@@ -2,6 +2,6 @@
 {
 	public enum TaskDifficultyType
 	{
-		Easy = 7, Medium = 8, Hard = 9
+		Easy = 20, Medium = 21, Hard = 22
 	}
 }

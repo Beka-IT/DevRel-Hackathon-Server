@@ -18,9 +18,9 @@ namespace WebApi.Entities
 		public DateTime DateOfBirth { get; set; }
 		public bool IsActivated { get; set; }
 		public RoleType Role { get; set; }
+		public UserStatusType Status { get; set; }
 		public long CompanyId { get; set; }
 		public Company Company { get; set; }
-		public List<Task> Tasks { get; } = new();
 		public List<Project> Projects { get; } = new();
 	}
 }
